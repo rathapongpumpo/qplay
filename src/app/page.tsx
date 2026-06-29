@@ -53,6 +53,7 @@ export default function Home() {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
   const [transactionId, setTransactionId] = useState<string>("");
+  const [showBannerType, setShowBannerType] = useState<string>("games");
 
   const scrollToWidget = () => {
     document.getElementById("topup-widget")?.scrollIntoView({ behavior: "smooth" });
@@ -182,49 +183,78 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Source Images Showcases (รูปจาก source) */}
+        {/* Source Images Showcases (ปรับปรุงแก้ปัญหาขอบดำและจัดรูปแบบแท็บให้พรีเมียม) */}
         <section className="section" id="topup-services" style={{ background: "rgba(10, 25, 49, 0.3)", borderTop: "1px solid var(--border-color)", borderBottom: "1px solid var(--border-color)" }}>
           <div className="container">
-            <h2 className="gradient-text" style={{ textAlign: "center", fontSize: "2.2rem", marginBottom: "16px" }}>
+            <h2 className="gradient-text" style={{ textAlign: "center", fontSize: "2.2rem", marginBottom: "12px" }}>
               สินค้าและบริการทั้งหมดของเรา
             </h2>
-            <p style={{ color: "var(--text-muted)", textAlign: "center", maxWidth: "600px", margin: "0 auto 40px auto", fontSize: "0.95rem" }}>
-              แสดงรายละเอียดหมวดหมู่บริการเติมเกม บัตรดิจิทัล และเติมเงินมือถือของบริษัท ควิกเพย์ ท็อปอัพ จำกัด จากแหล่งข้อมูลจริง
+            <p style={{ color: "var(--text-muted)", textAlign: "center", maxWidth: "600px", margin: "0 auto 32px auto", fontSize: "0.95rem" }}>
+              แสดงรายละเอียดหมวดหมู่บริการเติมเกม บัตรดิจิทัล และเติมเงินมือถือของบริษัท ควิกเพย์ ท็อปอัพ จำกัด จากเอกสารข้อมูลจริง
             </p>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "32px" }}>
-              <div className="card" style={{ padding: "16px" }}>
-                <h3 style={{ fontSize: "1.1rem", marginBottom: "16px", color: "var(--primary-light)" }}>
-                  <i className="fa-solid fa-gamepad" style={{ marginRight: "10px" }}></i>รายการเติมเกมและช่องทางเติมเงินระบบมือถือ
-                </h3>
-                <div style={{ position: "relative", width: "100%", height: "420px", borderRadius: "12px", overflow: "hidden", border: "1px solid var(--border-color)" }}>
-                  <Image 
-                    src="/assets/19134_0.jpg"
-                    alt="QuickPay Game Topup Banner List"
-                    fill
-                    style={{ objectFit: "contain", background: "#050c1a" }}
-                  />
-                </div>
+            <div style={{ maxWidth: "800px", margin: "0 auto" }}>
+              {/* Tab selector for banners */}
+              <div className="tabs-header" style={{ justifyContent: "center", marginBottom: "32px", gap: "12px", borderBottom: "none" }}>
+                <button
+                  onClick={() => setShowBannerType("games")}
+                  className={`tab-btn ${showBannerType === "games" ? "active" : ""}`}
+                  style={{ fontSize: "1rem" }}
+                >
+                  <i className="fa-solid fa-gamepad" style={{ marginRight: "8px" }}></i>
+                  บริการเติมเกมและมือถือ
+                </button>
+                <button
+                  onClick={() => setShowBannerType("cards")}
+                  className={`tab-btn ${showBannerType === "cards" ? "active" : ""}`}
+                  style={{ fontSize: "1rem" }}
+                >
+                  <i className="fa-solid fa-ticket" style={{ marginRight: "8px" }}></i>
+                  บัตรเติมเงินและสตรีมมิ่ง
+                </button>
               </div>
 
-              <div className="card" style={{ padding: "16px" }}>
-                <h3 style={{ fontSize: "1.1rem", marginBottom: "16px", color: "var(--accent-gold)" }}>
-                  <i className="fa-solid fa-ticket" style={{ marginRight: "10px" }}></i>รายการบัตรเติมเงินดิจิทัลและสตรีมมิ่ง
-                </h3>
-                <div style={{ position: "relative", width: "100%", height: "420px", borderRadius: "12px", overflow: "hidden", border: "1px solid var(--border-color)" }}>
-                  <Image 
-                    src="/assets/19138_0.jpg"
-                    alt="QuickPay Gift Card Showcase Banner"
-                    fill
-                    style={{ objectFit: "contain", background: "#050c1a" }}
-                  />
+              {showBannerType === "games" ? (
+                <div className="card" style={{ padding: "24px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+                  <p style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginBottom: "20px", textAlign: "center" }}>
+                    <i className="fa-solid fa-circle-info" style={{ marginRight: "6px", color: "var(--primary-light)" }}></i>
+                    โปรโมชั่นเติมเกมออนไลน์และระบบเติมเงินมือถือทุกเครือข่ายของ QuickPay
+                  </p>
+                  <div style={{ position: "relative", width: "100%", maxWidth: "550px", height: "680px", borderRadius: "12px", overflow: "hidden", border: "1px solid var(--border-color)" }}>
+                    <Image 
+                      src="/assets/19134_0.jpg"
+                      alt="QuickPay Game Topup Banner List"
+                      fill
+                      style={{ objectFit: "contain", background: "#050c1a" }}
+                      priority
+                    />
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="card" style={{ padding: "24px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+                  <p style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginBottom: "20px", textAlign: "center" }}>
+                    <i className="fa-solid fa-circle-info" style={{ marginRight: "6px", color: "var(--accent-gold)" }}></i>
+                    รายการบัตรเติมเงินดิจิทัลและสตรีมมิ่งชั้นนำ (ครอปขอบดำส่วนเกินออกเพื่อความพรีเมียม)
+                  </p>
+                  
+                  {/* Wrapper Zoom CSS to hide mobile screen black boundaries */}
+                  <div style={{ position: "relative", width: "100%", maxWidth: "480px", height: "550px", borderRadius: "12px", overflow: "hidden", border: "1px solid var(--border-color)", background: "#000000" }}>
+                    <div style={{ position: "absolute", width: "100%", height: "172%", top: "-36%", left: "0" }}>
+                      <Image 
+                        src="/assets/19138_0.jpg"
+                        alt="QuickPay Gift Card Showcase Banner"
+                        fill
+                        style={{ objectFit: "contain" }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </section>
 
-        {/* Interactive Topup Widget (4 steps as requested) */}
+        {/* Interactive Topup Widget */}
         <section className="section" id="topup-widget" style={{ paddingTop: "60px" }}>
           <div className="container">
             <h2 className="gradient-text" style={{ textAlign: "center", fontSize: "2.2rem", marginBottom: "40px" }}>
@@ -516,7 +546,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* API Provider Workflow (ปรับปรุงตามรูปที่แนบมา) */}
+        {/* API Provider Workflow (ปรับปรุงและตรวจสอบคำสะกดผิดทั้งหมด) */}
         <section className="section workflow-section">
           <div className="container">
             <div style={{ color: "var(--accent-gold)", fontWeight: "600", textTransform: "uppercase", letterSpacing: "2px", textAlign: "center", marginBottom: "12px" }}>
@@ -546,13 +576,13 @@ export default function Home() {
               <div className="workflow-step">
                 <div className="workflow-step-num">3</div>
                 <h4>ส่งคำสั่งผ่าน API</h4>
-                <p>ระบบเว็บไซต์ของคุณจะทำการส่งชุดคำสั่ง (API) ไปยัง API Provider แบบอัจฉริยะ</p>
+                <p>ระบบเว็บไซต์ของคุณจะทำการส่งชุดคำสั่ง (API) ไปยัง API Provider แบบอัตโนมัติ</p>
               </div>
 
               <div className="workflow-step">
                 <div className="workflow-step-num">4</div>
                 <h4>เชื่อมโยงสู่ผู้จัดจำหน่าย</h4>
-                <p>API Provider นำคำสั่งซื้อไปทำการตัดจ่ายเครดิตตรงกับค่ายเกมและตัวแทนค่ายใหญ่</p>
+                <p>API Provider นำคำสั่งซื้อไปทำการตัดจ่ายเครดิตตรงกับค่ายเกมและตัวแทนรายใหญ่</p>
               </div>
 
               <div className="workflow-step">
@@ -566,7 +596,7 @@ export default function Home() {
               <h3 style={{ fontSize: "1.2rem", marginBottom: "12px", color: "var(--primary-light)" }}>สรุปหัวใจหลักของระบบ:</h3>
               <ul style={{ listStyleType: "none", paddingLeft: "0", display: "flex", flexWrap: "wrap", gap: "24px" }}>
                 <li style={{ flex: "1 1 250px" }}>
-                  <strong style={{ color: "var(--accent-gold)", fontSize: "1.1rem" }}>API</strong> = ช่องทางหรือชุดคำสั่งทางโปรแกรมที่ใช้สำหรับคุยและเชื่อมโยงระหว่างระบบคอมพิวเตอร์ต่างเว็บไซต์
+                  <strong style={{ color: "var(--accent-gold)", fontSize: "1.1rem" }}>API</strong> = ช่องทางหรือชุดคำสั่งทางโปรแกรมที่ใช้สำหรับพูดคุยและเชื่อมโยงระหว่างระบบคอมพิวเตอร์ต่างเว็บไซต์
                 </li>
                 <li style={{ flex: "1 1 250px" }}>
                   <strong style={{ color: "var(--accent-gold)", fontSize: "1.1rem" }}>Provider</strong> = ผู้ให้บริการระบบเชื่อมต่อที่เป็นศูนย์กลางการกระจายสินค้าและตัดยอดเงิน
@@ -576,7 +606,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Real Public API Providers Table (ตามรูปที่แนบมา) */}
+        {/* Real Public API Providers Table (ตรวจสอบคำผิดแล้ว) */}
         <section className="section partner-section">
           <div className="container">
             <h2 className="gradient-text" style={{ textAlign: "center", fontSize: "2.2rem", marginBottom: "16px" }}>
@@ -602,7 +632,7 @@ export default function Home() {
                     </td>
                     <td>
                       บริษัท โคด้า เพย์เมนท์ส (ประเทศไทย) จำกัด<br />
-                      <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>เลขจดทะเบียนผู้เสียภาษี: 0105560169229 (ยังดำเนินกิจการอยู่)</span>
+                      <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>เลขทะเบียนจดทะเบียนผู้เสียภาษี: 0105560169229 (ยังดำเนินกิจการอยู่)</span>
                     </td>
                     <td><span className="partner-status-tag">API Provider หลักต่างประเทศ</span></td>
                   </tr>
@@ -632,7 +662,7 @@ export default function Home() {
                     </td>
                     <td>
                       ห้างหุ้นส่วนจำกัด อีซี่การ์ด.เกมส์<br />
-                      <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>จดทะเบียนทะเบียนพาณิชย์ถูกต้องและเป็นตัวแทนจำหน่าย</span>
+                      <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>จดทะเบียนพาณิชย์ถูกต้องและเป็นตัวแทนจำหน่าย</span>
                     </td>
                     <td><span className="partner-status-tag">ตัวแทนจำหน่าย API เติมเกม</span></td>
                   </tr>
@@ -663,7 +693,7 @@ export default function Home() {
                 <h2>บริษัท ควิกเพย์ ท็อปอัพ จำกัด</h2>
                 <p>
                   เราเป็นผู้ให้บริการระบบ API และอำนวยความสะดวกสำหรับการเติมเงินมือถือ/เกม สำนักงานใหญ่ตั้งอยู่ที่เมืองภูเก็ต 
-                  พร้อมมีแอดมินคอยช่วยเหลือดูแลทำรายการผ่านระบบ LINE ตลอด 24 ชั่วโมง
+                  พร้อมมีเจ้าหน้าที่คอยช่วยเหลือดูแลทำรายการผ่านระบบ LINE ตลอด 24 ชั่วโมง
                 </p>
 
                 <div className="contact-details">
@@ -771,7 +801,7 @@ export default function Home() {
             
             <p className="modal-desc" style={{ fontSize: "0.88rem", marginTop: "8px" }}>
               ระบบได้รับข้อมูลคำสั่งซื้อหมายเลข <strong>{transactionId}</strong> เรียบร้อยแล้ว<br />
-              กรุณา **แอดไลน์ส่งรูปภาพสลิปโอนเงิน** ด้านล่างเพื่อยืนยันรายการและเติมเงินเข้าบัญชีเกม
+              กรุณา **แอดไลน์เพื่อส่งรูปภาพสลิปโอนเงิน** ด้านล่างเพื่อยืนยันรายการและเติมเงินเข้าบัญชีเกม
             </p>
 
             {selectedService && selectedPackage && (
