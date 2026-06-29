@@ -5,17 +5,17 @@ import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-// Real game and card options from source images
+// Data structures matching source images
 const GAMES = [
-  { id: "garena", name: "Garena Shells", currency: "Shells", icon: "🎮" },
-  { id: "freefire", name: "Free Fire", currency: "Diamonds", icon: "💎" },
-  { id: "rov", name: "ROV", currency: "Voucher", icon: "⚔️" },
-  { id: "pubg", name: "PUBG Mobile", currency: "UC", icon: "🪂" },
-  { id: "mlbb", name: "Mobile Legends", currency: "Diamonds", icon: "👑" },
-  { id: "rom", name: "Ragnarok M", currency: "Zeny", icon: "🛡️" },
-  { id: "genshin", name: "Genshin Impact", currency: "Genesis Crystals", icon: "✨" },
-  { id: "wildrift", name: "League of Legends: Wild Rift", currency: "Wild Cores", icon: "🐉" },
-  { id: "fcmobile", name: "FC Mobile", currency: "FC Points", icon: "⚽" },
+  { id: "garena", name: "Garena Shells", currency: "Shells", icon: "🎮", defaultIdLabel: "บัญชี Garena ID" },
+  { id: "freefire", name: "Free Fire", currency: "Diamonds", icon: "💎", defaultIdLabel: "Player ID (UID)" },
+  { id: "rov", name: "ROV", currency: "Voucher", icon: "⚔️", defaultIdLabel: "OpenID / Garena Account" },
+  { id: "pubg", name: "PUBG Mobile", currency: "UC", icon: "🪂", defaultIdLabel: "Character ID" },
+  { id: "mlbb", name: "Mobile Legends", currency: "Diamonds", icon: "👑", defaultIdLabel: "User ID (Zone ID)" },
+  { id: "rom", name: "Ragnarok M", currency: "Zeny", icon: "🛡️", defaultIdLabel: "Character ID (Server ID)" },
+  { id: "genshin", name: "Genshin Impact", currency: "Genesis Crystals", icon: "✨", defaultIdLabel: "UID (Server)" },
+  { id: "wildrift", name: "League of Legends: Wild Rift", currency: "Wild Cores", icon: "🐉", defaultIdLabel: "Riot ID" },
+  { id: "fcmobile", name: "FC Mobile", currency: "FC Points", icon: "⚽", defaultIdLabel: "User ID" },
 ];
 
 const CARDS = [
@@ -36,33 +36,90 @@ const MOBILES = [
   { id: "mybynt", name: "my by NT", icon: "🟡" },
 ];
 
-const PACKAGES = [
-  { value: 50, label: "50 บาท" },
-  { value: 100, label: "100 บาท" },
-  { value: 300, label: "300 บาท" },
-  { value: 500, label: "500 บาท" },
-  { value: 1000, label: "1000 บาท" },
+const PACKAGE_TEMPLATES = [
+  { value: 50, rate: 1.0 },
+  { value: 100, rate: 1.05 },
+  { value: 300, rate: 1.1 },
+  { value: 500, rate: 1.15 },
+  { value: 1000, rate: 1.2 },
 ];
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<string>("games");
   const [selectedService, setSelectedService] = useState<any>(null);
-  const [selectedPackage, setSelectedPackage] = useState<any>(null);
   const [playerInfo, setPlayerInfo] = useState<string>("");
-  const [showLineModal, setShowLineModal] = useState<boolean>(false);
+  const [selectedPackage, setSelectedPackage] = useState<any>(null);
+  const [paymentMethod, setPaymentMethod] = useState<string>("");
+  const [currentStep, setCurrentStep] = useState<number>(1);
+  const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
+  const [transactionId, setTransactionId] = useState<string>("");
+
+  const scrollToWidget = () => {
+    document.getElementById("topup-widget")?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    setSelectedService(null);
+    setSelectedPackage(null);
+    setPlayerInfo("");
+    setPaymentMethod("");
+    setCurrentStep(1);
+  };
 
   const handleSelectService = (service: any) => {
     setSelectedService(service);
     setSelectedPackage(null);
+    setCurrentStep(2);
   };
 
-  const handleOpenLineModal = (e: React.FormEvent) => {
+  const handleNextStep2 = (e: React.FormEvent) => {
     e.preventDefault();
-    setShowLineModal(true);
+    if (playerInfo.trim().length > 0) {
+      setCurrentStep(3);
+    }
   };
 
-  const handleQuickLine = () => {
-    setShowLineModal(true);
+  const handleSelectPackage = (pkg: any) => {
+    setSelectedPackage(pkg);
+    setCurrentStep(4);
+  };
+
+  const handleConfirmTopup = () => {
+    if (selectedService && selectedPackage && paymentMethod) {
+      const tid = "QP-" + Math.floor(100000 + Math.random() * 900000);
+      setTransactionId(tid);
+      setShowSuccessModal(true);
+    }
+  };
+
+  const handleReset = () => {
+    setSelectedService(null);
+    setPlayerInfo("");
+    setSelectedPackage(null);
+    setPaymentMethod("");
+    setCurrentStep(1);
+    setShowSuccessModal(false);
+  };
+
+  const getStepClass = (step: number) => {
+    if (currentStep === step) return "step-item active";
+    if (currentStep > step) return "step-item completed";
+    return "step-item";
+  };
+
+  const getPackagesList = () => {
+    if (!selectedService) return [];
+    const unitSymbol = selectedService.currency || "Points";
+    return PACKAGE_TEMPLATES.map((tpl) => {
+      const units = Math.floor(tpl.value * tpl.rate);
+      return {
+        id: `pkg-${tpl.value}`,
+        title: `${units} ${unitSymbol}`,
+        price: tpl.value,
+        desc: `ได้รับ ${units} ${unitSymbol} ทันทีเข้าบัญชี`,
+      };
+    });
   };
 
   return (
@@ -79,48 +136,48 @@ export default function Home() {
           <div className="container">
             <div className="hero-subtitle">QuickPay TopUp Co., Ltd.</div>
             <h1 className="hero-title gradient-text">
-              ผู้ให้บริการเติมเงินระบบอัตโนมัติ<br />
-              แอดไลน์ทำรายการได้ทันที 24 ชั่วโมง
+              บริการเติมเงินเกมและชำระเงินออนไลน์<br />
+              สะดวกรวดเร็ว ตลอด 24 ชั่วโมง
             </h1>
             <p className="hero-desc">
-              บริษัท ควิกเพย์ ท็อปอัพ จำกัด บริการเติมเกมออนไลน์ บัตรดิจิทัล และเติมเงินมือถือทุกระบบ สะดวก รวดเร็ว มั่นคง ปลอดภัย 100%
+              บริษัท ควิกเพย์ ท็อปอัพ จำกัด เติมเกมออนไลน์ บัตรดิจิทัล และระบบเติมเงินมือถือ เชื่อมต่ออัตโนมัติผ่านระบบ API ความปลอดภัยสูง
             </p>
-            <button onClick={handleQuickLine} className="btn btn-primary" style={{ margin: "0 auto", padding: "16px 40px", borderRadius: "30px" }}>
-              <i className="fa-brands fa-line" style={{ marginRight: "8px", fontSize: "1.2rem" }}></i> แอดไลน์เติมเกมได้ทันที
+            <button onClick={scrollToWidget} className="btn btn-primary" style={{ margin: "0 auto", padding: "16px 40px", borderRadius: "30px" }}>
+              <i className="fa-solid fa-gamepad" style={{ marginRight: "8px" }}></i> เริ่มทำรายการเติมเงิน
             </button>
           </div>
         </section>
 
-        {/* Features list */}
+        {/* Feature Badges */}
         <section className="container">
           <div className="features-grid">
             <div className="feature-card">
               <div className="feature-icon-wrapper">
                 <i className="fa-solid fa-bolt"></i>
               </div>
-              <h3>เติมไว ตลอด 24 ชม.</h3>
-              <p>เชื่อมต่อระบบ API ค่ายเกมโดยตรง ทำรายการและอนุมัติเครดิตเข้าเกมทันใจ</p>
+              <h3>เติมเงินระบบอัตโนมัติ</h3>
+              <p>ทำรายการเติมเงินผ่านระบบตัดเครดิตและชุดคำสั่ง API โดยตรง สะดวกรวดเร็ว</p>
             </div>
             <div className="feature-card">
               <div className="feature-icon-wrapper">
                 <i className="fa-solid fa-shield-halved"></i>
               </div>
               <h3>ปลอดภัยมาตรฐานสากล</h3>
-              <p>ระบบความปลอดภัยระดับสากล ป้องกันข้อมูลลูกค้าอย่างหนาแน่นและรัดกุม</p>
+              <p>ปกป้องข้อมูลบัญชีผู้เล่นและประวัติการสั่งซื้อด้วยระบบรักษาความปลอดภัยมาตรฐาน</p>
+            </div>
+            <div className="feature-card">
+              <div className="feature-icon-wrapper">
+                <i className="fa-solid fa-check-to-slot"></i>
+              </div>
+              <h3>จดทะเบียนถูกต้อง</h3>
+              <p>ดำเนินกิจการในรูปแบบบริษัทจดทะเบียนถูกต้องตามกฎหมาย มีที่ตั้งสำนักงานชัดเจน</p>
             </div>
             <div className="feature-card">
               <div className="feature-icon-wrapper">
                 <i className="fa-solid fa-headset"></i>
               </div>
-              <h3>แอดมินดูแลใกล้ชิด</h3>
-              <p>มีเจ้าหน้าที่คอยอำนวยความสะดวกและแนะนำขั้นตอนการทำงานอย่างเป็นกันเอง</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon-wrapper">
-                <i className="fa-solid fa-square-check"></i>
-              </div>
-              <h3>จดทะเบียนถูกต้องตามกฎหมาย</h3>
-              <p>ดำเนินกิจการในรูปแบบบริษัทจำกัด มั่นใจได้ในความมั่นคงทางธุรกิจ 100%</p>
+              <h3>มีทีมงานดูแล 24 ชั่วโมง</h3>
+              <p>มีเจ้าหน้าที่ฝ่ายบริการลูกค้าสแตนด์บายคอยช่วยเหลือแก้ไขปัญหาผ่าน LINE</p>
             </div>
           </div>
         </section>
@@ -132,7 +189,7 @@ export default function Home() {
               สินค้าและบริการทั้งหมดของเรา
             </h2>
             <p style={{ color: "var(--text-muted)", textAlign: "center", maxWidth: "600px", margin: "0 auto 40px auto", fontSize: "0.95rem" }}>
-              แสดงข้อมูลบริการเติมเกม บัตรเติมเงิน และเครือข่ายมือถือของ QuickPay TopUp จากเอกสารข้อมูลจริงของบริษัท
+              แสดงรายละเอียดหมวดหมู่บริการเติมเกม บัตรดิจิทัล และเติมเงินมือถือของบริษัท ควิกเพย์ ท็อปอัพ จำกัด จากแหล่งข้อมูลจริง
             </p>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "32px" }}>
@@ -167,143 +224,243 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Interactive Topup Selector to Line */}
-        <section className="section" id="topup-widget">
+        {/* Interactive Topup Widget (4 steps as requested) */}
+        <section className="section" id="topup-widget" style={{ paddingTop: "60px" }}>
           <div className="container">
-            <h2 className="gradient-text" style={{ textAlign: "center", fontSize: "2.2rem", marginBottom: "12px" }}>
-              ทำรายการผ่านหน้าเว็บ
+            <h2 className="gradient-text" style={{ textAlign: "center", fontSize: "2.2rem", marginBottom: "40px" }}>
+              ระบบส่งข้อมูลทำรายการเติมเงิน
             </h2>
-            <p style={{ color: "var(--text-muted)", textAlign: "center", maxWidth: "600px", margin: "0 auto 40px auto", fontSize: "0.95rem" }}>
-              เลือกเกมและแพ็คเกจที่คุณต้องการ จากนั้นกดเติมเงินระบบจะแนะนำช่องทางติดต่อทำรายการผ่าน LINE อัตโนมัติ
-            </p>
 
             <div className="topup-layout">
-              {/* Widget Card */}
+              {/* Main Widget Card */}
               <div className="card">
-                {/* Tabs */}
-                <div className="tabs-header">
-                  <button
-                    onClick={() => setActiveTab("games")}
-                    className={`tab-btn ${activeTab === "games" ? "active" : ""}`}
-                  >
-                    เติมเกมออนไลน์
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("cards")}
-                    className={`tab-btn ${activeTab === "cards" ? "active" : ""}`}
-                  >
-                    บัตรดิจิทัล
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("mobiles")}
-                    className={`tab-btn ${activeTab === "mobiles" ? "active" : ""}`}
-                  >
-                    เติมเงินมือถือ
-                  </button>
+                {/* Stepper Progress */}
+                <div className="stepper">
+                  <div className={getStepClass(1)}>
+                    <div className="step-dot">1</div>
+                    <div className="step-label">เลือกบริการ</div>
+                  </div>
+                  <div className={getStepClass(2)}>
+                    <div className="step-dot">2</div>
+                    <div className="step-label">ข้อมูลผู้ใช้</div>
+                  </div>
+                  <div className={getStepClass(3)}>
+                    <div className="step-dot">3</div>
+                    <div className="step-label">เลือกราคา</div>
+                  </div>
+                  <div className={getStepClass(4)}>
+                    <div className="step-dot">4</div>
+                    <div className="step-label">ชำระเงิน</div>
+                  </div>
                 </div>
 
-                {/* Tab Items Grid */}
-                {activeTab === "games" && (
-                  <div className="items-grid">
-                    {GAMES.map((item) => (
-                      <div
-                        key={item.id}
-                        onClick={() => handleSelectService(item)}
-                        className={`item-card ${selectedService?.id === item.id ? "selected" : ""}`}
+                {/* Step 1: Choose Service Tab & List */}
+                {currentStep === 1 && (
+                  <div>
+                    <div className="tabs-header">
+                      <button
+                        onClick={() => handleTabChange("games")}
+                        className={`tab-btn ${activeTab === "games" ? "active" : ""}`}
                       >
-                        <div className="item-icon-container" style={{ fontSize: "1.8rem", background: "rgba(0,180,216,0.15)", width: "50px", height: "50px", borderRadius: "50%" }}>
-                          {item.icon}
-                        </div>
-                        <div className="item-name">{item.name}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {activeTab === "cards" && (
-                  <div className="items-grid">
-                    {CARDS.map((item) => (
-                      <div
-                        key={item.id}
-                        onClick={() => handleSelectService(item)}
-                        className={`item-card ${selectedService?.id === item.id ? "selected" : ""}`}
+                        เติมเกมออนไลน์
+                      </button>
+                      <button
+                        onClick={() => handleTabChange("cards")}
+                        className={`tab-btn ${activeTab === "cards" ? "active" : ""}`}
                       >
-                        <div className="item-icon-container" style={{ fontSize: "1.8rem", background: "rgba(255,183,3,0.15)", width: "50px", height: "50px", borderRadius: "50%" }}>
-                          {item.icon}
-                        </div>
-                        <div className="item-name">{item.name}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {activeTab === "mobiles" && (
-                  <div className="items-grid">
-                    {MOBILES.map((item) => (
-                      <div
-                        key={item.id}
-                        onClick={() => handleSelectService(item)}
-                        className={`item-card ${selectedService?.id === item.id ? "selected" : ""}`}
+                        บัตรดิจิทัล
+                      </button>
+                      <button
+                        onClick={() => handleTabChange("mobiles")}
+                        className={`tab-btn ${activeTab === "mobiles" ? "active" : ""}`}
                       >
-                        <div className="item-icon-container" style={{ fontSize: "1.8rem", background: "rgba(46,196,182,0.15)", width: "50px", height: "50px", borderRadius: "50%" }}>
-                          {item.icon}
-                        </div>
-                        <div className="item-name">{item.name}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Step 2: Form */}
-                {selectedService && (
-                  <form onSubmit={handleOpenLineModal} style={{ marginTop: "32px", borderTop: "1px solid var(--border-color)", paddingTop: "24px" }}>
-                    <div className="form-group">
-                      <label htmlFor="player-id">
-                        {activeTab === "mobiles" ? "เบอร์โทรศัพท์มือถือ" : "ไอดีผู้ใช้ / Player ID (สำหรับใช้ยืนยันการเติมเงิน)"}
-                      </label>
-                      <input
-                        type="text"
-                        id="player-id"
-                        required
-                        value={playerInfo}
-                        onChange={(e) => setPlayerInfo(e.target.value)}
-                        placeholder={activeTab === "mobiles" ? "กรอกเบอร์มือถือ เช่น 0891234567" : "กรอกไอดีเกมของคุณ"}
-                        className="form-input"
-                      />
+                        เติมเงินมือถือ
+                      </button>
                     </div>
 
-                    <div className="form-group">
-                      <label>เลือกจำนวนเงิน / แพ็คเกจเติมเงิน</label>
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))", gap: "12px", marginTop: "8px" }}>
-                        {PACKAGES.map((pkg) => (
+                    {/* Services Items Grid */}
+                    {activeTab === "games" && (
+                      <div className="items-grid">
+                        {GAMES.map((item) => (
                           <div
-                            key={pkg.value}
-                            onClick={() => setSelectedPackage(pkg)}
-                            className={`item-card ${selectedPackage?.value === pkg.value ? "selected" : ""}`}
-                            style={{ padding: "12px 8px" }}
+                            key={item.id}
+                            onClick={() => handleSelectService(item)}
+                            className={`item-card ${selectedService?.id === item.id ? "selected" : ""}`}
                           >
-                            <span style={{ fontWeight: "700", color: "var(--accent-gold)" }}>{pkg.label}</span>
+                            <div className="item-icon-container" style={{ fontSize: "1.8rem", background: "rgba(0,180,216,0.15)", width: "50px", height: "50px", borderRadius: "50%" }}>
+                              {item.icon}
+                            </div>
+                            <div className="item-name">{item.name}</div>
                           </div>
                         ))}
                       </div>
+                    )}
+
+                    {activeTab === "cards" && (
+                      <div className="items-grid">
+                        {CARDS.map((item) => (
+                          <div
+                            key={item.id}
+                            onClick={() => handleSelectService(item)}
+                            className={`item-card ${selectedService?.id === item.id ? "selected" : ""}`}
+                          >
+                            <div className="item-icon-container" style={{ fontSize: "1.8rem", background: "rgba(255,183,3,0.15)", width: "50px", height: "50px", borderRadius: "50%" }}>
+                              {item.icon}
+                            </div>
+                            <div className="item-name">{item.name}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {activeTab === "mobiles" && (
+                      <div className="items-grid">
+                        {MOBILES.map((item) => (
+                          <div
+                            key={item.id}
+                            onClick={() => handleSelectService(item)}
+                            className={`item-card ${selectedService?.id === item.id ? "selected" : ""}`}
+                          >
+                            <div className="item-icon-container" style={{ fontSize: "1.8rem", background: "rgba(46,196,182,0.15)", width: "50px", height: "50px", borderRadius: "50%" }}>
+                              {item.icon}
+                            </div>
+                            <div className="item-name">{item.name}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Step 2: Input Player Info */}
+                {currentStep === 2 && selectedService && (
+                  <div>
+                    <h3 style={{ marginBottom: "20px" }}>กรอกข้อมูลสำหรับ {selectedService.name}</h3>
+                    <form onSubmit={handleNextStep2}>
+                      <div className="form-group">
+                        <label htmlFor="player-info-input">
+                          {activeTab === "mobiles" ? "กรอกเบอร์มือถือผู้รับเงิน" : (selectedService.defaultIdLabel || "กรอกบัญชีผู้ใช้ / Player ID")}
+                        </label>
+                        <input
+                          type={activeTab === "mobiles" ? "tel" : "text"}
+                          id="player-info-input"
+                          required
+                          value={playerInfo}
+                          onChange={(e) => setPlayerInfo(e.target.value)}
+                          placeholder={activeTab === "mobiles" ? "เช่น 0891234567" : "กรอกข้อมูลบัญชีเกมของคุณที่นี่"}
+                          className="form-input"
+                          pattern={activeTab === "mobiles" ? "[0-9]{10}" : undefined}
+                        />
+                      </div>
+
+                      <div className="button-row">
+                        <button type="button" onClick={() => setCurrentStep(1)} className="btn btn-secondary">
+                          ย้อนกลับ
+                        </button>
+                        <button type="submit" className="btn btn-primary" disabled={!playerInfo.trim()}>
+                          ดำเนินการต่อ
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                )}
+
+                {/* Step 3: Select Package */}
+                {currentStep === 3 && selectedService && (
+                  <div>
+                    <h3 style={{ marginBottom: "20px" }}>เลือกแพ็คเกจเติมเงิน ({selectedService.name})</h3>
+                    <div className="packages-list">
+                      {getPackagesList().map((pkg) => (
+                        <div
+                          key={pkg.id}
+                          onClick={() => handleSelectPackage(pkg)}
+                          className={`package-item ${selectedPackage?.id === pkg.id ? "selected" : ""}`}
+                        >
+                          <div className="package-details">
+                            <span className="package-title">{pkg.title}</span>
+                            <span className="package-subtitle">{pkg.desc}</span>
+                          </div>
+                          <span className="package-price">฿{pkg.price}</span>
+                        </div>
+                      ))}
                     </div>
 
-                    <button
-                      type="submit"
-                      className="btn btn-primary"
-                      style={{ width: "100%", marginTop: "16px" }}
-                      disabled={!playerInfo || !selectedPackage}
-                    >
-                      <i className="fa-brands fa-line" style={{ marginRight: "8px", fontSize: "1.2rem" }}></i>
-                      กดเพื่อเติมเงินผ่าน LINE
-                    </button>
-                  </form>
+                    <div className="button-row">
+                      <button type="button" onClick={() => setCurrentStep(2)} className="btn btn-secondary">
+                        ย้อนกลับ
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 4: Choose Payment Method */}
+                {currentStep === 4 && selectedService && selectedPackage && (
+                  <div>
+                    <h3 style={{ marginBottom: "20px" }}>เลือกช่องทางการชำระเงิน</h3>
+                    <div className="payment-grid">
+                      <div
+                        onClick={() => setPaymentMethod("promptpay")}
+                        className={`payment-card ${paymentMethod === "promptpay" ? "selected" : ""}`}
+                      >
+                        <div className="payment-logo promptpay">QR Pay</div>
+                        <div className="payment-name">QR PromptPay</div>
+                      </div>
+                      <div
+                        onClick={() => setPaymentMethod("wallet")}
+                        className={`payment-card ${paymentMethod === "wallet" ? "selected" : ""}`}
+                      >
+                        <div className="payment-logo wallet">True Wallet</div>
+                        <div className="payment-name">TrueMoney Wallet</div>
+                      </div>
+                      <div
+                        onClick={() => setPaymentMethod("creditcard")}
+                        className={`payment-card ${paymentMethod === "creditcard" ? "selected" : ""}`}
+                      >
+                        <div className="payment-logo card-pay"><i className="fa-solid fa-credit-card"></i></div>
+                        <div className="payment-name">บัตรเครดิต/เดบิต</div>
+                      </div>
+                    </div>
+
+                    {/* QR Code Container simulation for PromptPay */}
+                    {paymentMethod === "promptpay" && (
+                      <div className="qr-container">
+                        <div className="qr-title">สแกนชำระเงินเพื่อส่งข้อมูลทำรายการ</div>
+                        <div className="qr-placeholder">
+                          {/* Simulated QR logo */}
+                          <div style={{ textAlign: "center" }}>
+                            <div style={{ fontSize: "2rem", color: "#004d80", fontWeight: "bold" }}>THAI QR</div>
+                            <div style={{ fontSize: "0.75rem", color: "#333", marginTop: "8px" }}>PROMPTPAY QR SYSTEM</div>
+                            <div style={{ border: "2px solid #333", width: "100px", height: "100px", margin: "10px auto", background: "repeating-linear-gradient(45deg, #ccc, #ccc 10px, #aaa 10px, #aaa 20px)" }}></div>
+                          </div>
+                        </div>
+                        <div className="qr-instructions">
+                          ยอดเงินชำระ: <strong style={{ color: "var(--primary-blue)", fontSize: "1.1rem" }}>฿{selectedPackage.price}.00</strong><br />
+                          กรุณาโอนเงินตามยอดที่ระบบกำหนดเพื่อเตรียมแจ้งสลิปในขั้นตอนถัดไป
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="button-row">
+                      <button type="button" onClick={() => setCurrentStep(3)} className="btn btn-secondary">
+                        ย้อนกลับ
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleConfirmTopup}
+                        disabled={!paymentMethod}
+                        className="btn btn-primary"
+                      >
+                        <i className="fa-solid fa-wallet"></i> ยืนยันและแจ้งโอนเงิน
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
 
-              {/* Side Summary */}
+              {/* Side Summary Panel */}
               <div className="card summary-card">
-                <h3 className="summary-title">สรุปคำขอสั่งเติมเงิน</h3>
+                <h3 className="summary-title">สรุปรายการคำสั่งซื้อ</h3>
+                
                 {selectedService ? (
                   <>
                     <div className="summary-row">
@@ -322,25 +479,36 @@ export default function Home() {
 
                     {selectedPackage && (
                       <div className="summary-row">
-                        <span className="summary-label">ราคาแพ็คเกจ:</span>
-                        <span className="summary-value" style={{ color: "var(--accent-gold)", fontWeight: "700" }}>{selectedPackage.label}</span>
+                        <span className="summary-label">แพ็คเกจที่เลือก:</span>
+                        <span className="summary-value">{selectedPackage.title}</span>
+                      </div>
+                    )}
+
+                    {paymentMethod && (
+                      <div className="summary-row">
+                        <span className="summary-label">ช่องทางชำระเงิน:</span>
+                        <span className="summary-value" style={{ textTransform: "uppercase" }}>{paymentMethod}</span>
                       </div>
                     )}
 
                     <div className="summary-divider"></div>
-                    <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", textAlign: "center", marginBottom: "16px" }}>
-                      ระบบจะแสดงช่องทางแอดไลน์ของแอดมิน เพื่อทำรายการตัดเครดิตและเติมเงินผ่านบัญชีจริง
-                    </p>
+                    
+                    <div className="summary-row">
+                      <span className="summary-label" style={{ fontSize: "1.1rem" }}>ยอดชำระสุทธิ:</span>
+                      <span className="summary-value summary-total">
+                        ฿{selectedPackage ? selectedPackage.price : 0}.00
+                      </span>
+                    </div>
 
-                    <button onClick={handleQuickLine} className="btn btn-secondary" style={{ width: "100%" }}>
-                      <i className="fa-brands fa-line" style={{ color: "#06c755", marginRight: "8px" }}></i>
-                      ติดต่อ LINE ทันที
-                    </button>
+                    <div className="topup-status-box">
+                      <i className="fa-solid fa-shield-halved" style={{ color: "var(--success)", marginRight: "6px" }}></i>
+                      ปลอดภัย 100% ผ่านระบบ QuickPay TopUp
+                    </div>
                   </>
                 ) : (
                   <div style={{ textAlign: "center", color: "var(--text-muted)", padding: "40px 0" }}>
                     <i className="fa-solid fa-cart-shopping" style={{ fontSize: "3rem", marginBottom: "16px", opacity: 0.3 }}></i>
-                    <p>เลือกระบบเกมเพื่อดูข้อมูลสรุป</p>
+                    <p>กรุณาเลือกบริการเติมเงิน เพื่อดำเนินการต่อ</p>
                   </div>
                 )}
               </div>
@@ -495,7 +663,7 @@ export default function Home() {
                 <h2>บริษัท ควิกเพย์ ท็อปอัพ จำกัด</h2>
                 <p>
                   เราเป็นผู้ให้บริการระบบ API และอำนวยความสะดวกสำหรับการเติมเงินมือถือ/เกม สำนักงานใหญ่ตั้งอยู่ที่เมืองภูเก็ต 
-                  เชื่อมต่อและดูแลอย่างใกล้ชิดด้วยจริยธรรมการทำธุรกิจที่มั่นคง
+                  พร้อมมีแอดมินคอยช่วยเหลือดูแลทำรายการผ่านระบบ LINE ตลอด 24 ชั่วโมง
                 </p>
 
                 <div className="contact-details">
@@ -582,51 +750,54 @@ export default function Home() {
 
       <Footer />
 
-      {/* LINE QR Code Add Friends Modal */}
-      {showLineModal && (
+      {/* Final Step Success modal displaying LINE QR Code as requested */}
+      {showSuccessModal && (
         <div className="modal-overlay">
           <div className="modal-content" style={{ maxWidth: "450px" }}>
             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "-20px", marginRight: "-20px" }}>
               <button 
-                onClick={() => setShowLineModal(false)}
+                onClick={handleReset}
                 style={{ background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "1.5rem" }}
               >
                 <i className="fa-solid fa-xmark"></i>
               </button>
             </div>
-            
-            <div style={{ display: "flex", justifyContent: "center", marginBottom: "16px" }}>
-              <i className="fa-brands fa-line" style={{ fontSize: "3.5rem", color: "#06c755" }}></i>
+
+            <div className="modal-icon" style={{ marginBottom: "12px" }}>
+              <i className="fa-solid fa-circle-notch fa-spin" style={{ color: "var(--accent-gold)" }}></i>
             </div>
             
-            <h3 className="modal-title">แอดไลน์เพื่อทำรายการเติมเงิน</h3>
-            <p className="modal-desc" style={{ fontSize: "0.9rem" }}>
-              {selectedService && selectedPackage ? (
-                <>
-                  คุณเลือกทำรายการ: <strong>{selectedService.name}</strong> แพ็คเกจ <strong>{selectedPackage.label}</strong><br />
-                  กรุณาสแกน QR Code ด้านล่างเพื่อส่งข้อมูลและทำรายการกับแอดมินทาง LINE ได้เลยครับ
-                </>
-              ) : (
-                "สแกน QR Code ด้านล่างเพื่อติดต่อทำรายการเติมเกม บัตรเติมเงิน หรือสมัครระบบตัวแทน"
-              )}
-            </p>
+            <h3 className="modal-title" style={{ fontSize: "1.4rem" }}>ขั้นตอนสุดท้าย: แอดไลน์ส่งหลักฐาน</h3>
             
-            <div style={{ background: "#ffffff", padding: "16px", borderRadius: "16px", display: "inline-block", margin: "10px auto 20px auto", border: "1px solid var(--border-color)" }}>
+            <p className="modal-desc" style={{ fontSize: "0.88rem", marginTop: "8px" }}>
+              ระบบได้รับข้อมูลคำสั่งซื้อหมายเลข <strong>{transactionId}</strong> เรียบร้อยแล้ว<br />
+              กรุณา **แอดไลน์ส่งรูปภาพสลิปโอนเงิน** ด้านล่างเพื่อยืนยันรายการและเติมเงินเข้าบัญชีเกม
+            </p>
+
+            {selectedService && selectedPackage && (
+              <div style={{ background: "rgba(255,255,255,0.03)", padding: "12px", borderRadius: "8px", border: "1px solid var(--border-color)", margin: "12px 0", textAlign: "left", fontSize: "0.85rem" }}>
+                <div>• บริการ: <strong>{selectedService.name}</strong></div>
+                <div>• ไอดีผู้ใช้: <strong>{playerInfo}</strong></div>
+                <div>• ยอดโอน: <strong style={{ color: "var(--accent-gold)" }}>฿{selectedPackage.price}.00</strong></div>
+              </div>
+            )}
+
+            <div style={{ background: "#ffffff", padding: "12px", borderRadius: "16px", display: "inline-block", margin: "10px auto 16px auto", border: "1px solid var(--border-color)" }}>
               <Image 
                 src="/assets/add.jpg" 
                 alt="LINE QR Code Contact" 
-                width={180} 
-                height={180} 
-                style={{ display: "block", borderRadius: "10px" }}
+                width={160} 
+                height={160} 
+                style={{ display: "block", borderRadius: "8px" }}
               />
             </div>
             
             <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "20px" }}>
-              แอดไลน์ไอดี: <strong style={{ color: "var(--primary-light)", fontSize: "1rem" }}>@quickpay</strong> (มี @ ด้านหน้า)
+              สแกน QR Code หรือแอดไลน์ไอดี: <strong style={{ color: "var(--success)", fontSize: "1rem" }}>@quickpay</strong>
             </p>
 
-            <button onClick={() => setShowLineModal(false)} className="btn btn-primary" style={{ width: "100%" }}>
-              ปิดหน้าต่างนี้
+            <button onClick={handleReset} className="btn btn-primary" style={{ width: "100%" }}>
+              เสร็จสิ้น / กลับหน้าหลัก
             </button>
           </div>
         </div>
