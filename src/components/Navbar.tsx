@@ -24,13 +24,16 @@ export default function Navbar() {
     <nav className="navbar">
       <div className="container navbar-container">
         <Link href="/" className="logo-link">
-          <Image
-            src="/assets/19140_0.jpg"
-            alt="QuickPay TopUp Logo"
-            width={48}
-            height={48}
-            className="logo-image"
-          />
+          <div className="logo-container">
+            <Image
+              src="/assets/19140_0.jpg"
+              alt="QuickPay TopUp Logo"
+              width={64}
+              height={64}
+              className="logo-image-zoom"
+              priority
+            />
+          </div>
           <span>
             QuickPay <span style={{ color: "var(--accent-gold)" }}>TopUp</span>
           </span>

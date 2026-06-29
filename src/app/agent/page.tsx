@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -19,7 +20,7 @@ export default function AgentPage() {
     e.preventDefault();
     setSubmitting(true);
 
-    // Simulate API registration
+    // Process local registration simulation (ready for API integration)
     setTimeout(() => {
       setSubmitting(false);
       setRegistered(true);
@@ -186,7 +187,7 @@ export default function AgentPage() {
                   {submitting ? (
                     <>
                       <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: "8px" }}></i>
-                      กำลังดำเนินการ...
+                      กำลังส่งข้อมูล...
                     </>
                   ) : (
                     <>
@@ -197,6 +198,28 @@ export default function AgentPage() {
               </form>
             </div>
 
+          </div>
+        </section>
+
+        {/* QR Contact Quick Link */}
+        <section className="container" style={{ marginTop: "40px", textAlign: "center" }}>
+          <div className="card" style={{ maxWidth: "600px", margin: "0 auto", padding: "32px" }}>
+            <h3 style={{ marginBottom: "16px" }}>ติดต่อฝ่ายพันธมิตรผ่าน LINE</h3>
+            <p style={{ color: "var(--text-muted)", fontSize: "0.95rem", marginBottom: "20px" }}>
+              สแกน QR Code ด้านล่างนี้ เพื่อส่งเอกสารและเปิดบัญชีตัวแทนอย่างรวดเร็วกับเจ้าหน้าที่โดยตรง
+            </p>
+            <div style={{ background: "#ffffff", padding: "12px", borderRadius: "16px", display: "inline-block", border: "1px solid var(--border-color)", marginBottom: "16px" }}>
+              <Image 
+                src="/assets/add.jpg" 
+                alt="LINE QR Code Contact" 
+                width={150} 
+                height={150} 
+                style={{ display: "block", borderRadius: "8px" }}
+              />
+            </div>
+            <p style={{ fontSize: "0.9rem", fontWeight: "600", color: "var(--primary-light)" }}>
+              LINE ID: @quickpay (สอบถามฝ่ายตัวแทนจำหน่ายได้ตลอด 24 ชั่วโมง)
+            </p>
           </div>
         </section>
       </main>
@@ -213,7 +236,7 @@ export default function AgentPage() {
             <h3 className="modal-title">ส่งข้อมูลใบสมัครเรียบร้อย</h3>
             <p className="modal-desc">
               ขอบคุณ <strong>คุณ {formData.fullname}</strong> ที่สนใจร่วมธุรกิจกับเรา 
-              ขณะนี้คำขอของคุณถูกบันทึกเรียบร้อย และเจ้าหน้าที่ฝ่ายพันธมิตรธุรกิจจะติดต่อกลับไปยังเบอร์โทร <strong>{formData.phone}</strong> หรืออีเมล <strong>{formData.email}</strong> ภายใน 24 ชั่วโมง
+              ขณะนี้คำขอของคุณถูกบันทึกเรียบร้อย และเจ้าหน้าที่ฝ่ายพันธมิตรธุรกิจจะติดต่อกลับไปยังเบอร์โทร <strong>{formData.phone}</strong> หรืออีเมล <strong>{formData.email}</strong> ภายใน 24 ชั่วโมง หรือคุณสามารถแอดไลน์ส่งข้อมูลหลักฐานเสริมได้ทันที
             </p>
             <button onClick={handleResetForm} className="btn btn-primary" style={{ width: "100%" }}>
               ตกลง
